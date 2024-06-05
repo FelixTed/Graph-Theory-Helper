@@ -7,7 +7,10 @@ const Network = () => {
     { data: { id: 'a' } },
     { data: { id: 'b' } },
     {data: {id: 'c'}},
+    {data: {id:'d'}},
     {data : {id:'ac',source:'a', target:'c'}},
+    {data : {id:'cd',source:'c', target:'d'}},
+    {data : {id:'ad',source:'a', target:'d'}},
     { data: { id: 'ab', source: 'a', target: 'b' } }
   ];
 
