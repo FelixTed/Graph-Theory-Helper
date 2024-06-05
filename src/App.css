@@ -1,5 +1,18 @@
 .App {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.cytoscape-container {
+  position: absolute; /* Positions the div absolutely relative to the nearest positioned ancestor */
+  right: 0; /* Aligns the div to the right edge of the screen */
+  border: 2px solid black; /* Sets a 2px solid black border */
+  padding: 10px; /* Adds some padding inside the div */
+  margin: 20px; /* Adds some margin outside the div */
+  background-color: lightgray; /* Adds a background color to make it visible */
 }
 
 .App-logo {
