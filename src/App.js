@@ -80,9 +80,9 @@ function App() {
           type="text"
           value={nodeId}
           onChange={(e) => setNodeId(e.target.value)}
-          placeholder="Node ID"
+          placeholder="Vertex ID"
         />
-        <button onClick={addNode}>Add Node</button>
+        <button onClick={addNode}>Add Vertex</button>
       </div>
       <div>
         <input
@@ -98,6 +98,20 @@ function App() {
           placeholder="Edge Target"
         />
         <button onClick={addEdge}>Add Edge</button>
+      </div>
+      <div>
+        <input
+          type = "text"
+          placeholder="Vertex Set"
+        />
+        <button>Add Vertex Set</button>
+      </div>
+      <div>
+        <input
+          type = "text"
+          placeholder='Edge Set'
+        />
+        <button>Add Edge Set</button>
       </div>
       {/* Pass the elements to the Network component */}
       <Network elements={elements} />
