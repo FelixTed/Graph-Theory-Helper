@@ -6,7 +6,11 @@ import CytoscapeComponent from 'react-cytoscapejs';
 const Network = ({ elements }) => {
   // Layout configuration for Cytoscape
   const layout = {
-    name: 'random',
+    name: 'grid', // Change to 'grid' or 'cose' to test different layouts
+    fit: true, // Whether to fit the viewport to the graph
+    padding: 10, // Padding around the layout
+    animate: true, // Whether to animate the layout
+    animationDuration: 1000 // Duration of the animation in milliseconds
   };
 
   // Style configuration for nodes and edges in Cytoscape
@@ -50,10 +54,14 @@ function App() {
   const [nodes, setNodes] = React.useState([]);
   const [edges, setEdges] = React.useState([]);
   
-  // State for input fields
+  // State for individual input fields
   const [nodeId, setNodeId] = React.useState('');
   const [edgeSource, setEdgeSource] = React.useState('');
   const [edgeTarget, setEdgeTarget] = React.useState('');
+
+  // State for batch input fields
+  const [vertexSet, setVertexSet] = React.useState('');
+  const [edgeSet, setEdgeSet] = React.useState('');
 
   // Function to add a new node
   const addNode = () => {
@@ -66,6 +74,23 @@ function App() {
     setEdges([...edges, { data: { id: `${edgeSource}${edgeTarget}`, source: edgeSource, target: edgeTarget } }]);
     setEdgeSource(''); // Clear the input fields after adding
     setEdgeTarget('');
+  };
+
+  // Function to add a batch of nodes
+  const addVertexSet = () => {
+    const newNodes = vertexSet.split(',').map(v => ({ data: { id: v.trim() } }));
+    setNodes([...nodes, ...newNodes]);
+    setVertexSet(''); // Clear the input field after adding
+  };
+
+  // Function to add a batch of edges
+  const addEdgeSet = () => {
+    const newEdges = edgeSet.slice(1, -1).split('),(').map(e => {
+      const [source, target] = e.split(',').map(v => v.trim());
+      return { data: { id: `${source}${target}`, source, target } };
+    });
+    setEdges([...edges, ...newEdges]);
+    setEdgeSet(''); // Clear the input field after adding
   };
 
   // Combine nodes and edges into one elements array
@@ -101,17 +126,23 @@ function App() {
       </div>
       <div>
         <input
-          type = "text"
+          type="text"
+          value={vertexSet}
+          onChange={(e) => setVertexSet(e.target.value)}
           placeholder="Vertex Set"
         />
-        <button>Add Vertex Set</button>
+        <button onClick={addVertexSet}>Add Vertex Set</button>
+        <label>ex: 1, 2, 3</label>
       </div>
       <div>
         <input
-          type = "text"
-          placeholder='Edge Set'
+          type="text"
+          value={edgeSet}
+          onChange={(e) => setEdgeSet(e.target.value)}
+          placeholder="Edge Set"
         />
-        <button>Add Edge Set</button>
+        <button onClick={addEdgeSet}>Add Edge Set</button>
+        <label>ex: (1,2), (2,3), (1,3)</label>
       </div>
       {/* Pass the elements to the Network component */}
       <Network elements={elements} />
