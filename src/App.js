@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import CytoscapeComponent from 'react-cytoscapejs';
 
@@ -51,46 +51,83 @@ const Network = ({ elements }) => {
 // Main App component
 function App() {
   // State to hold nodes and edges
-  const [nodes, setNodes] = React.useState([]);
-  const [edges, setEdges] = React.useState([]);
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
   
   // State for individual input fields
-  const [nodeId, setNodeId] = React.useState('');
-  const [edgeSource, setEdgeSource] = React.useState('');
-  const [edgeTarget, setEdgeTarget] = React.useState('');
+  const [nodeId, setNodeId] = useState('');
+  const [edgeSource, setEdgeSource] = useState('');
+  const [edgeTarget, setEdgeTarget] = useState('');
 
   // State for batch input fields
-  const [vertexSet, setVertexSet] = React.useState('');
-  const [edgeSet, setEdgeSet] = React.useState('');
+  const [vertexSet, setVertexSet] = useState('');
+  const [edgeSet, setEdgeSet] = useState('');
+
+  // State for error messages
+  const [error, setError] = useState('');
 
   // Function to add a new node
   const addNode = () => {
-    setNodes([...nodes, { data: { id: nodeId } }]);
+    if (!nodeId.trim()) {
+      setError('Node ID cannot be empty.');
+      return;
+    }
+    setNodes([...nodes, { data: { id: nodeId.trim() } }]);
     setNodeId(''); // Clear the input field after adding
+    setError(''); // Clear any previous error
   };
 
   // Function to add a new edge
   const addEdge = () => {
-    setEdges([...edges, { data: { id: `${edgeSource}${edgeTarget}`, source: edgeSource, target: edgeTarget } }]);
+    if (!edgeSource.trim() || !edgeTarget.trim()) {
+      setError('Edge Source and Target cannot be empty.');
+      return;
+    }
+    if (!nodes.find(node => node.data.id === edgeSource.trim()) || 
+        !nodes.find(node => node.data.id === edgeTarget.trim())) {
+      setError('Both Edge Source and Target must be valid nodes.');
+      return;
+    }
+    setEdges([...edges, { data: { id: `${edgeSource.trim()}${edgeTarget.trim()}`, source: edgeSource.trim(), target: edgeTarget.trim() } }]);
     setEdgeSource(''); // Clear the input fields after adding
     setEdgeTarget('');
+    setError(''); // Clear any previous error
   };
 
   // Function to add a batch of nodes
   const addVertexSet = () => {
+    if (!vertexSet.trim()) {
+      setError('Vertex Set cannot be empty.');
+      return;
+    }
     const newNodes = vertexSet.split(',').map(v => ({ data: { id: v.trim() } }));
     setNodes([...nodes, ...newNodes]);
     setVertexSet(''); // Clear the input field after adding
+    setError(''); // Clear any previous error
   };
 
   // Function to add a batch of edges
+  let errorStatus = false;
   const addEdgeSet = () => {
+    if (!edgeSet.trim()) {
+      setError('Edge Set cannot be empty.');
+      return;
+    }
     const newEdges = edgeSet.slice(1, -1).split('),(').map(e => {
       const [source, target] = e.split(',').map(v => v.trim());
+      if (!nodes.find(node => node.data.id === source) || !nodes.find(node => node.data.id === target)) {
+        setError(`Invalid edge: (${source}, ${target}). Both nodes must exist.`);
+        console.log("here");
+        errorStatus = true;
+        return null;
+      }
       return { data: { id: `${source}${target}`, source, target } };
-    });
+    }).filter(e => e !== null);
     setEdges([...edges, ...newEdges]);
     setEdgeSet(''); // Clear the input field after adding
+    if(!errorStatus){
+      setError(''); // Clear any previous error
+    }
   };
 
   // Combine nodes and edges into one elements array
@@ -100,6 +137,7 @@ function App() {
   return (
     <div className="App">
       <h1>GRAPH THEORY CALCULATOR</h1>
+      {error && <div className="error">{error}</div>}
       <div>
         <input
           type="text"
