@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './App.css';
 import CytoscapeComponent from 'react-cytoscapejs';
 
 // Network component to render the Cytoscape graph
-const Network = ({ elements }) => {
+const Network = ({ elements, cyRef }) => {
   // Layout configuration for Cytoscape
   const layout = {
     name: 'grid', // Change to 'grid' or 'cose' to test different layouts
@@ -39,6 +39,7 @@ const Network = ({ elements }) => {
   return (
     <div className='cytoscape-container'>
       <CytoscapeComponent
+        cy={(cy) => { cyRef.current = cy }}
         elements={elements}
         style={{ width: '600px', height: '600px' }}
         layout={layout}
@@ -65,6 +66,9 @@ function App() {
 
   // State for error messages
   const [error, setError] = useState('');
+
+  // Ref for Cytoscape instance
+  const cyRef = useRef(null);
 
   // Function to add a new node
   const addNode = () => {
@@ -125,11 +129,43 @@ function App() {
     }).filter(e => e !== null);
     setEdges([...edges, ...newEdges]);
     setEdgeSet(''); // Clear the input field after adding
-    if(!errorStatus){
+    if (!errorStatus) {
       setError(''); // Clear any previous error
     }
   };
 
+  // Function to extract node IDs
+  const extractNodeIds = () => {
+    if (cyRef.current) {
+      const nodeIds = cyRef.current.nodes().map(node => node.id());
+      alert(`Node IDs: ${nodeIds.join(', ')}`);
+    }
+  };
+  const extractAdjencyMatrix = () => {
+    if (!cyRef.current) return;
+
+    let currentNodes = cyRef.current.nodes();
+    let numNodes = currentNodes.length;
+    let adjacencyMatrix = Array.from({ length: numNodes }, () => Array(numNodes).fill(0));
+  
+    for (let i = 0; i < numNodes; i++) {
+      for (let j = 0; j < numNodes; j++) {
+        if (i === j) continue; // Skip self-loops
+  
+        // Check if there is an edge between node i and node j
+        let sourceNode = currentNodes[i];
+        let targetNode = currentNodes[j];
+        let hasEdge = sourceNode.edgesWith(targetNode).length > 0;
+  
+        if (hasEdge) {
+          adjacencyMatrix[i][j] = 1;
+          adjacencyMatrix[j][i] = 1; // Since it's an undirected graph
+        }
+      }
+    }
+  
+    alert(adjacencyMatrix.map(row => row.join(' ')).join('\n'));
+  }
   // Combine nodes and edges into one elements array
   const elements = [...nodes, ...edges];
 
@@ -182,8 +218,10 @@ function App() {
         <button onClick={addEdgeSet}>Add Edge Set</button>
         <label>ex: (1,2), (2,3), (1,3)</label>
       </div>
+      <button onClick={extractNodeIds}>Extract Node IDs</button>
+      <button onClick = {extractAdjencyMatrix}>Extract first node</button>
       {/* Pass the elements to the Network component */}
-      <Network elements={elements} />
+      <Network elements={elements} cyRef={cyRef} />
     </div>
   );
 }
