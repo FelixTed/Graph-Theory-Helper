@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 import CytoscapeComponent from 'react-cytoscapejs';
+import { greedyColoring } from './ChromaticNumber';
 
 // Network component to render the Cytoscape graph
 const Network = ({ elements, cyRef }) => {
@@ -67,13 +68,20 @@ function App() {
   // State for error messages
   const [error, setError] = useState('');
 
-  //State for adjency matrix
-  const [adjencyMatrix,setAdjencyMatrix] = useState('');
-  //State for display of vertex set and edge set 
-  const [displaySet,setDisplaySet] = useState('');
+  // State for adjacency matrix
+  const [adjacencyMatrix, setAdjacencyMatrix] = useState('');
+  // State for display of vertex set and edge set 
+  const [displaySet, setDisplaySet] = useState('');
+
+  // State for adjacency list
+  const [adjacencyList, setAdjacencyList] = useState({});
+
+  const [chromaticNumber,setChromaticNumber] = useState("");
 
   // Ref for Cytoscape instance
   const cyRef = useRef(null);
+  //Holds chromatic Number
+ 
 
   // Function to add a new node
   const addNode = () => {
@@ -82,6 +90,7 @@ function App() {
       return;
     }
     setNodes([...nodes, { data: { id: nodeId.trim() } }]);
+    setAdjacencyList(prev => ({ ...prev, [nodeId.trim()]: [] })); // Add node to adjacency list
     setNodeId(''); // Clear the input field after adding
     setError(''); // Clear any previous error
   };
@@ -98,6 +107,16 @@ function App() {
       return;
     }
     setEdges([...edges, { data: { id: `${edgeSource.trim()}${edgeTarget.trim()}`, source: edgeSource.trim(), target: edgeTarget.trim() } }]);
+    setAdjacencyList(prev => {
+      const newList = { ...prev };
+      if (!newList[edgeSource.trim()].includes(edgeTarget.trim())) {
+        newList[edgeSource.trim()].push(edgeTarget.trim());
+      }
+      if (!newList[edgeTarget.trim()].includes(edgeSource.trim())) {
+        newList[edgeTarget.trim()].push(edgeSource.trim());
+      }
+      return newList;
+    });
     setEdgeSource(''); // Clear the input fields after adding
     setEdgeTarget('');
     setError(''); // Clear any previous error
@@ -111,6 +130,13 @@ function App() {
     }
     const newNodes = vertexSet.split(',').map(v => ({ data: { id: v.trim() } }));
     setNodes([...nodes, ...newNodes]);
+    setAdjacencyList(prev => {
+      const newList = { ...prev };
+      newNodes.forEach(node => {
+        newList[node.data.id] = [];
+      });
+      return newList;
+    });
     setVertexSet(''); // Clear the input field after adding
     setError(''); // Clear any previous error
   };
@@ -126,20 +152,31 @@ function App() {
       const [source, target] = e.split(',').map(v => v.trim());
       if (!nodes.find(node => node.data.id === source) || !nodes.find(node => node.data.id === target)) {
         setError(`Invalid edge: (${source}, ${target}). Both nodes must exist.`);
-        console.log("here");
         errorStatus = true;
         return null;
       }
       return { data: { id: `${source}${target}`, source, target } };
     }).filter(e => e !== null);
     setEdges([...edges, ...newEdges]);
+    setAdjacencyList(prev => {
+      const newList = { ...prev };
+      newEdges.forEach(edge => {
+        if (!newList[edge.data.source].includes(edge.data.target)) {
+          newList[edge.data.source].push(edge.data.target);
+        }
+        if (!newList[edge.data.target].includes(edge.data.source)) {
+          newList[edge.data.target].push(edge.data.source);
+        }
+      });
+      return newList;
+    });
     setEdgeSet(''); // Clear the input field after adding
     if (!errorStatus) {
       setError(''); // Clear any previous error
     }
   };
 
-  // Function to extract vertex set and edge set for display on the ui
+  // Function to extract vertex set and edge set for display on the UI
   const extractDisplaySet = () => {
     if (cyRef.current) {
       const nodeIds = cyRef.current.nodes().map(node => node.id());
@@ -147,7 +184,7 @@ function App() {
       setDisplaySet(`Node IDs: ${nodeIds.join(', ')} Edges: (${edgeIds.join('),(')})`);
     }
   };
-  const extractAdjencyMatrix = () => {
+  const extractAdjacencyMatrix = () => {
     if (!cyRef.current) return;
 
     let currentNodes = cyRef.current.nodes();
@@ -170,11 +207,11 @@ function App() {
       }
     }
   
-    setAdjencyMatrix(aMatrix.map(row => row.join(' ')).join('\n'));
+    setAdjacencyMatrix(aMatrix.map(row => row.join(' ')).join('\n'));
   }
 
   useEffect(() => {
-    extractAdjencyMatrix();
+    extractAdjacencyMatrix();
     extractDisplaySet();
     if (cyRef.current) {
       cyRef.current.layout({
@@ -189,12 +226,20 @@ function App() {
   }, [nodes, edges]);
 
   const clearGraph = () => {
-    setNodes("");
-    setEdges("");
+    setNodes([]);
+    setEdges([]);
+    setAdjacencyList({});
+    setAdjacencyMatrix('');
+    setDisplaySet('');
+  }
+
+  const findChromaticNumber = () => {
+    setChromaticNumber(greedyColoring(adjacencyList));
   }
   // Combine nodes and edges into one elements array
   const elements = [...nodes, ...edges];
 
+  console.log(adjacencyList);
   // Render the app
   return (
     <div className="App">
@@ -248,7 +293,14 @@ function App() {
       <div>
         <pre>{displaySet}</pre>
       </div>
-      <pre>{adjencyMatrix}</pre>
+      <pre>{adjacencyMatrix}</pre>
+      <div>
+        <pre>{JSON.stringify(adjacencyList, null, 2)}</pre>
+      </div>
+      <div>
+        <button onClick={findChromaticNumber}>Chromatic Number:</button>
+        <par>{chromaticNumber}</par>
+      </div>
       {/* Pass the elements to the Network component */}
       <Network elements={elements} cyRef={cyRef} />
     </div>
