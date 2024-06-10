@@ -176,7 +176,22 @@ function App() {
   useEffect(() => {
     extractAdjencyMatrix();
     extractDisplaySet();
+    if (cyRef.current) {
+      cyRef.current.layout({
+        name: 'cose', // Same layout as defined in the Network component
+        fit: true,
+        padding: 10,
+        animate: true,
+        animationDuration: 1000,
+        randomize: false
+      }).run();
+    }
   }, [nodes, edges]);
+
+  const clearGraph = () => {
+    setNodes("");
+    setEdges("");
+  }
   // Combine nodes and edges into one elements array
   const elements = [...nodes, ...edges];
 
@@ -229,6 +244,7 @@ function App() {
         <button onClick={addEdgeSet}>Add Edge Set</button>
         <label>ex: (1,2), (2,3), (1,3)</label>
       </div>
+      <button onClick={clearGraph}>Clear Graph</button>
       <div>
         <pre>{displaySet}</pre>
       </div>
