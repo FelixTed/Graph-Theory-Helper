@@ -52,3 +52,16 @@
     transform: rotate(360deg);
   }
 }
+
+.matrix-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Adjust the gap between the button and the matrix as needed */
+}
+pre {
+  margin: 0;
+  padding: 5px;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 import CytoscapeComponent from 'react-cytoscapejs';
 
@@ -67,6 +67,11 @@ function App() {
   // State for error messages
   const [error, setError] = useState('');
 
+  //State for adjency matrix
+  const [adjencyMatrix,setAdjencyMatrix] = useState('');
+  //State for display of vertex set and edge set 
+  const [displaySet,setDisplaySet] = useState('');
+
   // Ref for Cytoscape instance
   const cyRef = useRef(null);
 
@@ -134,11 +139,12 @@ function App() {
     }
   };
 
-  // Function to extract node IDs
-  const extractNodeIds = () => {
+  // Function to extract vertex set and edge set for display on the ui
+  const extractDisplaySet = () => {
     if (cyRef.current) {
       const nodeIds = cyRef.current.nodes().map(node => node.id());
-      alert(`Node IDs: ${nodeIds.join(', ')}`);
+      const edgeIds = cyRef.current.edges().map(edge => `${edge.id()[0]},${edge.id()[1]}`);
+      setDisplaySet(`Node IDs: ${nodeIds.join(', ')} Edges: (${edgeIds.join('),(')})`);
     }
   };
   const extractAdjencyMatrix = () => {
@@ -146,7 +152,7 @@ function App() {
 
     let currentNodes = cyRef.current.nodes();
     let numNodes = currentNodes.length;
-    let adjacencyMatrix = Array.from({ length: numNodes }, () => Array(numNodes).fill(0));
+    let aMatrix = Array.from({ length: numNodes }, () => Array(numNodes).fill(0));
   
     for (let i = 0; i < numNodes; i++) {
       for (let j = 0; j < numNodes; j++) {
@@ -158,14 +164,19 @@ function App() {
         let hasEdge = sourceNode.edgesWith(targetNode).length > 0;
   
         if (hasEdge) {
-          adjacencyMatrix[i][j] = 1;
-          adjacencyMatrix[j][i] = 1; // Since it's an undirected graph
+          aMatrix[i][j] = 1;
+          aMatrix[j][i] = 1; // Since it's an undirected graph
         }
       }
     }
   
-    alert(adjacencyMatrix.map(row => row.join(' ')).join('\n'));
+    setAdjencyMatrix(aMatrix.map(row => row.join(' ')).join('\n'));
   }
+
+  useEffect(() => {
+    extractAdjencyMatrix();
+    extractDisplaySet();
+  }, [nodes, edges]);
   // Combine nodes and edges into one elements array
   const elements = [...nodes, ...edges];
 
@@ -218,8 +229,10 @@ function App() {
         <button onClick={addEdgeSet}>Add Edge Set</button>
         <label>ex: (1,2), (2,3), (1,3)</label>
       </div>
-      <button onClick={extractNodeIds}>Extract Node IDs</button>
-      <button onClick = {extractAdjencyMatrix}>Extract first node</button>
+      <div>
+        <pre>{displaySet}</pre>
+      </div>
+      <pre>{adjencyMatrix}</pre>
       {/* Pass the elements to the Network component */}
       <Network elements={elements} cyRef={cyRef} />
     </div>
