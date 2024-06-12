@@ -273,7 +273,7 @@ function App() {
   // Render the app
   return (
     <div className="App">
-      <h1>GRAPH THEORY CALCULATOR</h1>
+      <h1 className='App-text'>GRAPH THEORY CALCULATOR</h1>
       {error && <div className="error">{error}</div>}
       <div>
         <input
@@ -307,7 +307,7 @@ function App() {
           placeholder="Vertex Set"
         />
         <button onClick={addVertexSet}>Add Vertex Set</button>
-        <label>ex: 1, 2, 3</label>
+        <label className='App-text'>ex: 1, 2, 3</label>
       </div>
       <div>
         <input
@@ -317,7 +317,7 @@ function App() {
           placeholder="Edge Set"
         />
         <button onClick={addEdgeSet}>Add Edge Set</button>
-        <label>ex: (1,2), (2,3), (1,3)</label>
+        <label className='App-text'>ex: (1,2), (2,3), (1,3)</label>
       </div>
       <button onClick={clearGraph}>Clear Graph</button>
       <div>
