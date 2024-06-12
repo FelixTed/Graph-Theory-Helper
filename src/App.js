@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 import CytoscapeComponent from 'react-cytoscapejs';
 import { graphColoring } from './ChromaticNumber';
+import { planarCheck } from './PlanarCheck';
 
 // Network component to render the Cytoscape graph
 const Network = ({ elements, cyRef }) => {
@@ -77,7 +78,6 @@ function App() {
   const [adjacencyList, setAdjacencyList] = useState([]);
 
   const [chromaticNumber,setChromaticNumber] = useState("");
-  const [maxChromatic, setMaxChromatic] = useState(0);
 
   // Ref for Cytoscape instance
   const cyRef = useRef(null);
@@ -261,21 +261,14 @@ function App() {
   }
 
   const findChromaticNumber = () => {
-    if (maxChromatic > 0) {
-      setChromaticNumber(graphColoring(adjacencyList, maxChromatic));
-    } else {
-      setError('Please set a valid max chromatic number.');
-    }
+      setChromaticNumber(graphColoring(adjacencyList, 100));
   }
-
-  const handleMaxChromaticChange = (e) => {
-    setMaxChromatic(Number(e.target.value));
-  };
 
   // Combine nodes and edges into one elements array
   const elements = [...nodes, ...edges];
 
-  console.log(adjacencyList);
+  console.log(nodes);
+  console.log(edges);
 
   // Render the app
   return (
@@ -331,12 +324,11 @@ function App() {
         <pre>{displaySet}</pre>
       </div>
       <pre>{adjacencyMatrix}</pre>
+      <pre>Is Planar?: {((planarCheck(edges,nodes)) ? 'Potentially, try to find planar representation to be certain' : 'Not planar')}</pre>
       <div>
-        <input type='number' placeholder='Max Chromatic Number' onChange={handleMaxChromaticChange} id='maxChromaticField'></input>
         <button onClick={findChromaticNumber}>Chromatic Number:</button>
         <label>{chromaticNumber}</label>
-      </div>
-      <label>You can input the number of nodes as the max chromatic number but go down if algrithm takes too long</label>
+      </div>      
       {/* Pass the elements to the Network component */}
       <Network elements={elements} cyRef={cyRef} />
     </div>
