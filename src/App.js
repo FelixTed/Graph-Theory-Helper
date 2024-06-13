@@ -3,6 +3,7 @@ import './App.css';
 import CytoscapeComponent from 'react-cytoscapejs';
 import { graphColoring } from './ChromaticNumber';
 import { planarCheck } from './PlanarCheck';
+import { connectedComponents } from './ConnectedComponents';
 
 // Network component to render the Cytoscape graph
 const Network = ({ elements, cyRef }) => {
@@ -263,6 +264,9 @@ function App() {
   const findChromaticNumber = () => {
       setChromaticNumber(graphColoring(adjacencyList, 100));
   }
+  const findConnectedComponenets = () => {
+      console.log(connectedComponents(adjacencyList));
+  }
 
   // Combine nodes and edges into one elements array
   const elements = [...nodes, ...edges];
@@ -328,7 +332,8 @@ function App() {
       <div>
         <button onClick={findChromaticNumber}>Chromatic Number:</button>
         <label>{chromaticNumber}</label>
-      </div>      
+      </div>
+      <button onClick = {findConnectedComponenets}> Connected Components</button>
       {/* Pass the elements to the Network component */}
       <Network elements={elements} cyRef={cyRef} />
     </div>
