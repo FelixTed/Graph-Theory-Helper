@@ -1,45 +1,27 @@
-// Function to initialize a graph with an adjacency list
-function initializeGraph(adjList) {
-    return {
-        V: adjList.length,
-        adjListArray: adjList
-    };
-}
-
-// Function to add an edge to an undirected graph
-function addEdge(graph, src, dest) {
-    graph.adjListArray[src].push(dest);
-    graph.adjListArray[dest].push(src);
-}
-
-// Function to perform a DFS and mark all reachable vertices
-function DFSUtil(graph, v, visited, component) {
-    visited[v] = true;
-    component.push(v);
-
-    for (let x = 0; x < graph.adjListArray[v].length; x++) {
-        let neighbor = graph.adjListArray[v][x];
-        if (!visited[neighbor]) {
-            DFSUtil(graph, neighbor, visited, component);
+function getConnectedComponents(adjacencyList){
+    let visited = [];
+    let stack = [];
+    let connectedComponents = [];
+    for(let i = 0; i<adjacencyList.length; i++){
+        if(!visited.includes(i+1)){
+            connectedComponents.push(visited);
+            visited = 0;
+            visited.push(i+1);
+            DFS(visited,stack);
         }
     }
+    connectedComponents.push(visited);
 }
-
-// Function to find all connected components in the graph
-function connectedComponents(adjList) {
-    const graph = initializeGraph(adjList);
-
-    let visited = new Array(graph.V).fill(false);
-    let components = [];
-
-    for (let v = 1; v < graph.V; ++v) {
-        if (!visited[v]) {
-            let component = [];
-            DFSUtil(graph, v, visited, component);
-            components.push(component);
-        }
+function DFS(visited,stack,adjacencyList){
+    for(let j = 0; j < adjacencyList[visited[visited.length-1]].length; j++){
+        if(!visited.includes(adjacencyList[visited[visited.length-1]][j]))
+            stack.push(adjacencyList[visited[visited.length-1]][j]);
     }
-
-    return components;
+     visited.push(stack.pop());
+     if(stack.length === 0)
+        return visited;
+    else
+        DFS(visited,stack,adjacencyList);
 }
-export {connectedComponents}
+
+export {getConnectedComponents};
