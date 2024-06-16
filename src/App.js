@@ -60,6 +60,7 @@ function App() {
   const [displaySet, setDisplaySet] = useState('');
   const [adjacencyList, setAdjacencyList] = useState([]);
   const [chromaticNumber, setChromaticNumber] = useState("");
+  const [connectedComp, setConnectedComp] = useState([]);
 
   const cyRef = useRef(null);
 
@@ -207,6 +208,7 @@ function App() {
   useEffect(() => {
     extractAdjacencyMatrix();
     extractDisplaySet();
+    setConnectedComp(getConnectedComponents(adjacencyList));
     if (cyRef.current) {
       cyRef.current.layout({
         name: 'cose',
@@ -217,7 +219,7 @@ function App() {
         randomize: false
       }).run();
     }
-  }, [nodes, edges]);
+  }, [nodes, edges, adjacencyList]);
 
   const clearGraph = () => {
     setNodes([]);
@@ -226,52 +228,47 @@ function App() {
     setAdjacencyMatrix('');
     setDisplaySet('');
     setChromaticNumber('');
+    setConnectedComp([]);
   };
 
   const findChromaticNumber = () => {
     setChromaticNumber(graphColoring(adjacencyList, 100));
   };
 
-  const findConnectedComponents = () => {
-    console.log(getConnectedComponents(adjacencyList));
-  };
-
   const elements = [...nodes, ...edges];
 
   function getConnectedComponents(adjacencyList) {
-    let visited = new Set(); // Using a Set to track visited nodes
-    let connectedComponents = [];
-
-    // Helper function to perform DFS
-    function DFS(node, component) {
-        let stack = [node];
-        while (stack.length > 0) {
-            let current = stack.pop();
-            if (!visited.has(current)) {
-                visited.add(current);
-                component.push(current);
-                console.log(adjacencyList[current])
-                    for (let neighbor of adjacencyList[current]) {
-                        if (!visited.has(neighbor)) {
-                            stack.push(neighbor-1);
-                        }
-                    }
-                
-            }
-        }
-    }
-
-    // Iterate over each node in the adjacency list
-    for (let i = 0; i < adjacencyList.length; i++) {
-        if (!visited.has(i)) {
-            let component = [];
-            DFS(i, component);
-            connectedComponents.push(component);
-        }
-    }
-
-    return connectedComponents;
-}
+      let visited = new Set(); // Using a Set to track visited nodes
+      let connectedComponents = [];
+  
+      // Helper function to perform DFS
+      function DFS(node, component) {
+          let stack = [node];
+          while (stack.length > 0) {
+              let current = stack.pop();
+              if (!visited.has(current)) {
+                  visited.add(current);
+                  component.push(current + 1); // Convert back to one-indexed for the result
+                  for (let neighbor of adjacencyList[current]) {
+                      if (!visited.has(neighbor - 1)) {
+                          stack.push(neighbor - 1); // Convert to zero-indexed for accessing adjacency list
+                      }
+                  }
+              }
+          }
+      }
+  
+      // Iterate over each node in the adjacency list
+      for (let i = 0; i < adjacencyList.length; i++) {
+          if (!visited.has(i)) {
+              let component = [];
+              DFS(i, component);
+              connectedComponents.push(component);
+          }
+      }
+  
+      return connectedComponents;
+  }
 
   return (
     <div className="App">
@@ -325,14 +322,13 @@ function App() {
       <div>
         <pre>{displaySet}</pre>
       </div>
-      <pre>Adjacency List: {JSON.stringify(adjacencyList, null, 2)}</pre>
-      <pre>Adjacency Matrix:\n{adjacencyMatrix}</pre>
+      <pre>Adjacency Matrix:{'\n' + adjacencyMatrix}</pre>
       <pre>Is Planar?: {((planarCheck(edges,nodes)) ? 'Potentially, try to find planar representation to be certain' : 'Not planar')}</pre>
       <div>
         <button onClick={findChromaticNumber}>Chromatic Number:</button>
         <label className='App-text'>{chromaticNumber}</label>
       </div>
-      <button onClick={findConnectedComponents}>Connected Components</button>
+      <pre>{JSON.stringify(connectedComp, null, 2)}</pre>
       <Network elements={elements} cyRef={cyRef} />
     </div>
   );
