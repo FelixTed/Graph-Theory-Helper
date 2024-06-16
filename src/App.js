@@ -3,20 +3,16 @@ import './App.css';
 import CytoscapeComponent from 'react-cytoscapejs';
 import { graphColoring } from './ChromaticNumber';
 import { planarCheck } from './PlanarCheck';
-import { getConnectedComponents } from './ConnectedComponents';
 
-// Network component to render the Cytoscape graph
 const Network = ({ elements, cyRef }) => {
-  // Layout configuration for Cytoscape
   const layout = {
-    name: 'grid', // Change to 'grid' or 'cose' to test different layouts
-    fit: true, // Whether to fit the viewport to the graph
-    padding: 10, // Padding around the layout
-    animate: true, // Whether to animate the layout
-    animationDuration: 1000 // Duration of the animation in milliseconds
+    name: 'grid',
+    fit: true,
+    padding: 10,
+    animate: true,
+    animationDuration: 1000
   };
 
-  // Style configuration for nodes and edges in Cytoscape
   const style = [
     {
       selector: 'node',
@@ -38,7 +34,6 @@ const Network = ({ elements, cyRef }) => {
     }
   ];
 
-  // Render the Cytoscape graph
   return (
     <div className='cytoscape-container'>
       <CytoscapeComponent
@@ -52,99 +47,81 @@ const Network = ({ elements, cyRef }) => {
   );
 };
 
-// Main App component
 function App() {
-  // State to hold nodes and edges
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
-  
-  // State for individual input fields
   const [nodeId, setNodeId] = useState('');
   const [edgeSource, setEdgeSource] = useState('');
   const [edgeTarget, setEdgeTarget] = useState('');
-
-  // State for batch input fields
   const [vertexSet, setVertexSet] = useState('');
   const [edgeSet, setEdgeSet] = useState('');
-
-  // State for error messages
   const [error, setError] = useState('');
-
-  // State for adjacency matrix
   const [adjacencyMatrix, setAdjacencyMatrix] = useState('');
-  // State for display of vertex set and edge set 
   const [displaySet, setDisplaySet] = useState('');
-
-  // State for adjacency list
   const [adjacencyList, setAdjacencyList] = useState([]);
+  const [chromaticNumber, setChromaticNumber] = useState("");
 
-  const [chromaticNumber,setChromaticNumber] = useState("");
-
-  // Ref for Cytoscape instance
   const cyRef = useRef(null);
 
-  // Function to add a new node
   const addNode = () => {
     if (!nodeId.trim()) {
       setError('Node ID cannot be empty.');
       return;
     }
-    // Ensure nodeId contains only numbers
     if (!/^\d+$/.test(nodeId.trim())) {
       setError('Node ID must be a number.');
       return;
     }
-    setNodes([...nodes, { data: { id: nodeId.trim() } }]);
+    const id = parseInt(nodeId.trim());
+    setNodes([...nodes, { data: { id: id.toString() } }]);
     setAdjacencyList(prev => {
       const newList = [...prev];
-      newList[nodeId.trim() - 1] = [];
+      newList[id - 1] = [];
       return newList;
     });
-    setNodeId(''); // Clear the input field after adding
-    setError(''); // Clear any previous error
+    setNodeId('');
+    setError('');
   };
 
-  // Function to add a new edge
   const addEdge = () => {
     if (!edgeSource.trim() || !edgeTarget.trim()) {
       setError('Edge Source and Target cannot be empty.');
       return;
     }
-    // Ensure edgeSource and edgeTarget contain only numbers
     if (!/^\d+$/.test(edgeSource.trim()) || !/^\d+$/.test(edgeTarget.trim())) {
       setError('Edge Source and Target must be numbers.');
       return;
     }
-    if (!nodes.find(node => node.data.id === edgeSource.trim()) || 
-        !nodes.find(node => node.data.id === edgeTarget.trim())) {
+    const source = parseInt(edgeSource.trim());
+    const target = parseInt(edgeTarget.trim());
+    if (!nodes.find(node => node.data.id === source.toString()) || 
+        !nodes.find(node => node.data.id === target.toString())) {
       setError('Both Edge Source and Target must be valid nodes.');
       return;
     }
-    setEdges([...edges, { data: { id: `${edgeSource.trim()}${edgeTarget.trim()}`, source: edgeSource.trim(), target: edgeTarget.trim() } }]);
+    setEdges([...edges, { data: { id: `${source}${target}`, source: source.toString(), target: target.toString() } }]);
     setAdjacencyList(prev => {
       const newList = [...prev];
-      const sourceIndex = edgeSource.trim() - 1;
-      const targetIndex = edgeTarget.trim() - 1;
-      if (!newList[sourceIndex].includes(parseInt(edgeTarget.trim()))) {
-        newList[sourceIndex].push(parseInt(edgeTarget.trim()));
+      newList[source - 1] = newList[source - 1] || [];
+      newList[target - 1] = newList[target - 1] || [];
+      if (!newList[source - 1].includes(target)) {
+        newList[source - 1].push(target);
       }
-      if (!newList[targetIndex].includes(parseInt(edgeSource.trim()))) {
-        newList[targetIndex].push(parseInt(edgeSource.trim()));
+      if (!newList[target - 1].includes(source)) {
+        newList[target - 1].push(source);
       }
       return newList;
     });
-    setEdgeSource(''); // Clear the input fields after adding
+    setEdgeSource('');
     setEdgeTarget('');
-    setError(''); // Clear any previous error
+    setError('');
   };
 
-  // Function to add a batch of nodes
   const addVertexSet = () => {
     if (!vertexSet.trim()) {
       setError('Vertex Set cannot be empty.');
       return;
     }
-    // Regular expression to allow only numbers and commas
     const vertexSetPattern = /^[0-9]+(,[0-9]+)*$/;
     if (!vertexSetPattern.test(vertexSet.trim())) {
       setError('Invalid Vertex Set. Only numbers and commas are allowed.');
@@ -159,18 +136,15 @@ function App() {
       });
       return newList;
     });
-    setVertexSet(''); // Clear the input field after adding
-    setError(''); // Clear any previous error
+    setVertexSet('');
+    setError('');
   };
-  
 
-  // Function to add a batch of edges
   const addEdgeSet = () => {
     if (!edgeSet.trim()) {
       setError('Edge Set cannot be empty.');
       return;
     }
-    // Regular expression to allow only numbers, commas, and parentheses
     const edgeSetPattern = /^\(\d+,\d+\)(,\(\d+,\d+\))*$/;
     if (!edgeSetPattern.test(edgeSet.trim())) {
       setError('Invalid Edge Set. Only numbers, commas, and parentheses are allowed.');
@@ -188,8 +162,8 @@ function App() {
     setAdjacencyList(prev => {
       const newList = [...prev];
       newEdges.forEach(edge => {
-        const sourceIndex = edge.data.source - 1;
-        const targetIndex = edge.data.target - 1;
+        const sourceIndex = parseInt(edge.data.source) - 1;
+        const targetIndex = parseInt(edge.data.target) - 1;
         if (!newList[sourceIndex].includes(parseInt(edge.data.target))) {
           newList[sourceIndex].push(parseInt(edge.data.target));
         }
@@ -199,50 +173,43 @@ function App() {
       });
       return newList;
     });
-    setEdgeSet(''); // Clear the input field after adding
-    setError(''); // Clear any previous error
+    setEdgeSet('');
+    setError('');
   };
 
-  // Function to extract vertex set and edge set for display on the UI
   const extractDisplaySet = () => {
     if (cyRef.current) {
       const nodeIds = cyRef.current.nodes().map(node => node.id());
-      const edgeIds = cyRef.current.edges().map(edge => `${edge.id()[0]},${edge.id()[1]}`);
+      const edgeIds = cyRef.current.edges().map(edge => `${edge.data('source')},${edge.data('target')}`);
       setDisplaySet(`Node IDs: ${nodeIds.join(', ')} Edges: (${edgeIds.join('),(')})`);
     }
   };
+
   const extractAdjacencyMatrix = () => {
     if (!cyRef.current) return;
 
-    let currentNodes = cyRef.current.nodes();
-    let numNodes = currentNodes.length;
-    let aMatrix = Array.from({ length: numNodes }, () => Array(numNodes).fill(0));
-  
-    for (let i = 0; i < numNodes; i++) {
-      for (let j = 0; j < numNodes; j++) {
-        if (i === j) continue; // Skip self-loops
-  
-        // Check if there is an edge between node i and node j
-        let sourceNode = currentNodes[i];
-        let targetNode = currentNodes[j];
-        let hasEdge = sourceNode.edgesWith(targetNode).length > 0;
-  
-        if (hasEdge) {
-          aMatrix[i][j] = 1;
-          aMatrix[j][i] = 1; // Since it's an undirected graph
+    const currentNodes = cyRef.current.nodes();
+    const numNodes = currentNodes.length;
+    const matrix = Array.from({ length: numNodes }, () => Array(numNodes).fill(0));
+
+    currentNodes.forEach((sourceNode, i) => {
+      currentNodes.forEach((targetNode, j) => {
+        if (sourceNode.edgesWith(targetNode).length > 0) {
+          matrix[i][j] = 1;
+          matrix[j][i] = 1; // Since it's an undirected graph
         }
-      }
-    }
-  
-    setAdjacencyMatrix(aMatrix.map(row => row.join(' ')).join('\n'));
-  }
+      });
+    });
+
+    setAdjacencyMatrix(matrix.map(row => row.join(' ')).join('\n'));
+  };
 
   useEffect(() => {
     extractAdjacencyMatrix();
     extractDisplaySet();
     if (cyRef.current) {
       cyRef.current.layout({
-        name: 'cose', // Same layout as defined in the Network component
+        name: 'cose',
         fit: true,
         padding: 10,
         animate: true,
@@ -259,22 +226,53 @@ function App() {
     setAdjacencyMatrix('');
     setDisplaySet('');
     setChromaticNumber('');
-  }
+  };
 
   const findChromaticNumber = () => {
-      setChromaticNumber(graphColoring(adjacencyList, 100));
-  }
-  const findConnectedComponenets = () => {
-      console.log(getConnectedComponents(adjacencyList));
-  }
+    setChromaticNumber(graphColoring(adjacencyList, 100));
+  };
 
-  // Combine nodes and edges into one elements array
+  const findConnectedComponents = () => {
+    console.log(getConnectedComponents(adjacencyList));
+  };
+
   const elements = [...nodes, ...edges];
 
-  console.log(nodes);
-  console.log(edges);
+  function getConnectedComponents(adjacencyList) {
+    let visited = new Set(); // Using a Set to track visited nodes
+    let connectedComponents = [];
 
-  // Render the app
+    // Helper function to perform DFS
+    function DFS(node, component) {
+        let stack = [node];
+        while (stack.length > 0) {
+            let current = stack.pop();
+            if (!visited.has(current)) {
+                visited.add(current);
+                component.push(current);
+                console.log(adjacencyList[current])
+                    for (let neighbor of adjacencyList[current]) {
+                        if (!visited.has(neighbor)) {
+                            stack.push(neighbor-1);
+                        }
+                    }
+                
+            }
+        }
+    }
+
+    // Iterate over each node in the adjacency list
+    for (let i = 0; i < adjacencyList.length; i++) {
+        if (!visited.has(i)) {
+            let component = [];
+            DFS(i, component);
+            connectedComponents.push(component);
+        }
+    }
+
+    return connectedComponents;
+}
+
   return (
     <div className="App">
       <h1 className='App-text'>GRAPH THEORY CALCULATOR</h1>
@@ -327,14 +325,14 @@ function App() {
       <div>
         <pre>{displaySet}</pre>
       </div>
-      <pre>{adjacencyMatrix}</pre>
+      <pre>Adjacency List: {JSON.stringify(adjacencyList, null, 2)}</pre>
+      <pre>Adjacency Matrix:\n{adjacencyMatrix}</pre>
       <pre>Is Planar?: {((planarCheck(edges,nodes)) ? 'Potentially, try to find planar representation to be certain' : 'Not planar')}</pre>
       <div>
         <button onClick={findChromaticNumber}>Chromatic Number:</button>
-        <label>{chromaticNumber}</label>
+        <label className='App-text'>{chromaticNumber}</label>
       </div>
-      <button onClick = {findConnectedComponenets}> Connected Components</button>
-      {/* Pass the elements to the Network component */}
+      <button onClick={findConnectedComponents}>Connected Components</button>
       <Network elements={elements} cyRef={cyRef} />
     </div>
   );

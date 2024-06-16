@@ -1,27 +1,33 @@
-function getConnectedComponents(adjacencyList){
-    let visited = [];
-    let stack = [];
+function getConnectedComponents(adjacencyList) {
+    let visited = new Set(); // Using a Set to track visited nodes
     let connectedComponents = [];
-    for(let i = 0; i<adjacencyList.length; i++){
-        if(!visited.includes(i+1)){
-            connectedComponents.push(visited);
-            visited = 0;
-            visited.push(i+1);
-            DFS(visited,stack);
+
+    // Helper function to perform DFS
+    function DFS(node, component) {
+        let stack = [node];
+        while (stack.length > 0) {
+            let current = stack.pop();
+            if (!visited.has(current)) {
+                visited.add(current);
+                component.push(current);
+                for (let neighbor of adjacencyList[current]) {
+                    if (!visited.has(neighbor)) {
+                        stack.push(neighbor);
+                    }
+                }
+            }
         }
     }
-    connectedComponents.push(visited);
-}
-function DFS(visited,stack,adjacencyList){
-    for(let j = 0; j < adjacencyList[visited[visited.length-1]].length; j++){
-        if(!visited.includes(adjacencyList[visited[visited.length-1]][j]))
-            stack.push(adjacencyList[visited[visited.length-1]][j]);
-    }
-     visited.push(stack.pop());
-     if(stack.length === 0)
-        return visited;
-    else
-        DFS(visited,stack,adjacencyList);
-}
 
+    // Iterate over each node in the adjacency list
+    for (let i = 0; i < adjacencyList.length; i++) {
+        if (!visited.has(i)) {
+            let component = [];
+            DFS(i, component);
+            connectedComponents.push(component);
+        }
+    }
+
+    return connectedComponents;
+}
 export {getConnectedComponents};
