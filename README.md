@@ -1,3 +1,5 @@
+Simple undirected graph calculator built using [React](https://react.dev/) and [Cytoscape.js](https://github.com/plotly/react-cytoscapejs)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
