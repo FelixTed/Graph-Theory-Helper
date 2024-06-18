@@ -249,11 +249,17 @@ function App() {
               if (!visited.has(current)) {
                   visited.add(current);
                   component.push(current + 1); // Convert back to one-indexed for the result
+                  try{
                   for (let neighbor of adjacencyList[current]) {
                       if (!visited.has(neighbor - 1)) {
                           stack.push(neighbor - 1); // Convert to zero-indexed for accessing adjacency list
                       }
                   }
+                }catch(err){
+                  setError("Invalid Vertex set, reset graph");
+                  clearGraph();
+                  return;
+                }
               }
           }
       }
