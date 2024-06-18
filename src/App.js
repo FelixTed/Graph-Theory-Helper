@@ -272,6 +272,7 @@ function App() {
 
   return (
     <div className="App">
+      <div className="Input-container">
       <h1 className='App-text'>GRAPH THEORY CALCULATOR</h1>
       {error && <div className="error">{error}</div>}
       <div>
@@ -329,6 +330,7 @@ function App() {
         <label className='App-text'>{chromaticNumber}</label>
       </div>
       <pre>{JSON.stringify(connectedComp, null, 2)}</pre>
+    </div>
       <Network elements={elements} cyRef={cyRef} />
     </div>
   );
