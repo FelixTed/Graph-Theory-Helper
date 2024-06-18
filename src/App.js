@@ -39,7 +39,7 @@ const Network = ({ elements, cyRef }) => {
       <CytoscapeComponent
         cy={(cy) => { cyRef.current = cy }}
         elements={elements}
-        style={{ width: '600px', height: '600px' }}
+        style={{ width: '100%', height: '100%' }}
         layout={layout}
         stylesheet={style}
       />
@@ -50,7 +50,6 @@ const Network = ({ elements, cyRef }) => {
 function App() {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
-  const [nodeId, setNodeId] = useState('');
   const [edgeSource, setEdgeSource] = useState('');
   const [edgeTarget, setEdgeTarget] = useState('');
   const [vertexSet, setVertexSet] = useState('');
@@ -64,24 +63,25 @@ function App() {
 
   const cyRef = useRef(null);
 
+  const [nodeCounter, setNodeCounter] = useState(1);
   const addNode = () => {
-    if (!nodeId.trim()) {
-      setError('Node ID cannot be empty.');
-      return;
-    }
-    if (!/^\d+$/.test(nodeId.trim())) {
-      setError('Node ID must be a number.');
-      return;
-    }
-    const id = parseInt(nodeId.trim());
+    // if (!nodeId.trim()) {
+    //   setError('Node ID cannot be empty.');
+    //   return;
+    // }
+    // if (!/^\d+$/.test(nodeId.trim())) {
+    //   setError('Node ID must be a number.');
+    //   return;
+    // }
+    const id = nodeCounter;
     setNodes([...nodes, { data: { id: id.toString() } }]);
     setAdjacencyList(prev => {
       const newList = [...prev];
       newList[id - 1] = [];
       return newList;
     });
-    setNodeId('');
     setError('');
+    setNodeCounter(nodeCounter+1);
   };
 
   const addEdge = () => {
@@ -276,13 +276,7 @@ function App() {
       <h1 className='App-text'>GRAPH THEORY CALCULATOR</h1>
       {error && <div className="error">{error}</div>}
       <div>
-        <input
-          type="text"
-          value={nodeId}
-          onChange={(e) => setNodeId(e.target.value)}
-          placeholder="Vertex ID"
-        />
-        <button onClick={addNode}>Add Vertex</button>
+        <button onClick={addNode}>Add Node</button>
       </div>
       <div>
         <input
