@@ -3,7 +3,6 @@ import './App.css';
 import CytoscapeComponent from 'react-cytoscapejs';
 import { graphColoring } from './ChromaticNumber';
 import { planarCheck } from './PlanarCheck';
-import { AdsComponent} from './AdsComponent.js'
 
 const Network = ({ elements, cyRef }) => {
   const layout = {
@@ -272,8 +271,11 @@ function App() {
   return (
     <div className="App">
       <div className="Input-container">
+        <head>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6671564023753399"
+     crossorigin="anonymous"></script>
+        </head>
         <h1 className='App-text'>GRAPH THEORY CALCULATOR</h1>
-        <AdsComponent dataAdSlot='9634423532' />
 
         {error && <div className="error">{error}</div>}
         <div>
@@ -326,7 +328,6 @@ function App() {
         </div>
         <pre>{JSON.stringify(connectedComp, null, 2)}</pre>
       </div>
-      <AdsComponent dataAdSlot='9634423532' />
       <Network elements={elements} cyRef={cyRef} />
     </div>
   );
