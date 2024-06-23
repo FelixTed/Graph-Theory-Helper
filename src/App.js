@@ -274,6 +274,7 @@ function App() {
         <head>
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6671564023753399"
      crossorigin="anonymous"></script>
+     <meta name="google-site-verification" content="BSkHTjQuOrHTRC-1j6yUReYJJR_WJJrTb1qiucp8pEQ" />
         </head>
         <h1 className='App-text'>GRAPH THEORY CALCULATOR</h1>
 
