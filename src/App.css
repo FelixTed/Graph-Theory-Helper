@@ -51,7 +51,9 @@ body {
   text-align: center;
   color: white;
 }
-
+.error {
+  color: white;
+}
 .App-link {
   color: #61dafb;
 }
